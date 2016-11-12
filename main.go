@@ -82,12 +82,13 @@ func main() {
     first_name := c.PostForm("first_name")
     last_name := c.PostForm("last_name")
     email := c.PostForm("email")
+    password := c.PostForm("password")
 
-    stmt, err := db.Prepare("insert into users (first_name, last_name, email) values(?,?,?);")
+    stmt, err := db.Prepare("insert into users (first_name, last_name, email, password) values(?,?,?,?);")
     if err != nil {
       fmt.Print(err.Error())
     }
-    _, err = stmt.Exec(first_name, last_name, email)
+    _, err = stmt.Exec(first_name, last_name, email, password)
 
     if err != nil {
       fmt.Print(err.Error())
@@ -105,17 +106,17 @@ func main() {
   })
 
   // PUT - update a user details
-  router.PUT("/users", func(c *gin.Context) {
+  router.PUT("/users/:id", func(c *gin.Context) {
     var buffer bytes.Buffer
-    id := c.Query("id")
+    id := c.Param("id")
     first_name := c.PostForm("first_name")
     last_name := c.PostForm("last_name")
-    email := c.PostForm("email")
-    stmt, err := db.Prepare("update users set first_name= ?, last_name= ?, email= ? where id= ?;")
+    password := c.PostForm("password")
+    stmt, err := db.Prepare("update users set first_name= ?, last_name= ?, password= ? where id= ?;")
     if err != nil {
       fmt.Print(err.Error())
     }
-    _, err = stmt.Exec(first_name, last_name, email, id)
+    _, err = stmt.Exec(first_name, last_name, password, id)
     if err != nil {
       fmt.Print(err.Error())
     }
@@ -132,8 +133,8 @@ func main() {
   })
 
   // Delete resources
-  router.DELETE("/users", func(c *gin.Context) {
-    id := c.Query("id")
+  router.DELETE("/users/:id", func(c *gin.Context) {
+    id := c.Param("id")
     stmt, err := db.Prepare("delete from users where id= ?;")
     if err != nil {
       fmt.Print(err.Error())
