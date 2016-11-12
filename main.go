@@ -82,14 +82,7 @@ func main() {
     first_name := c.PostForm("first_name")
     last_name := c.PostForm("last_name")
     email := c.PostForm("email")
-    // validate
-    // if first_name == "" || last_name == "" || email == "" {
-    //   // c.JSON(http.StatusUnprocessableEntity, gin.H{
-    //   //   "errors": "Invalid Parameters",
-    //   // })
-    //   // return
-    //   fmt.Print(err.Error())
-    // }
+
     stmt, err := db.Prepare("insert into users (first_name, last_name, email) values(?,?,?);")
     if err != nil {
       fmt.Print(err.Error())
@@ -153,5 +146,35 @@ func main() {
       "message": fmt.Sprintf("Successfully deleted users: %s", id),
     })
   })
+
+  // POST login a user
+  router.POST("/login", func(c *gin.Context) {
+    var (
+      user Users
+      result gin.H
+    )
+    email    := c.PostForm("email")
+    password := c.PostForm("password")
+    row      := db.QueryRow("SELECT id, first_name, last_name, email FROM users WHERE email = ? AND password= ? ORDER BY ID ASC LIMIT 1;", email, password)
+    err       = row.Scan(&user.Id, &user.First_Name, &user.Last_Name, &user.Email)
+    status   := http.StatusOK
+
+    if err != nil {
+      status = http.StatusUnprocessableEntity
+      result = gin.H{
+        "errors": "Invalid email or password!",
+      }
+    } else {
+      result = gin.H{
+        "user": user,
+        "login": true,
+      }
+    }
+
+    c.JSON(status, result)
+  })
+
+
+  // listen
   router.Run(":3000")
 }
